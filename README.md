@@ -1,4 +1,4 @@
-[![Buy Me A Coffee](https://miro.medium.com/v2/resize:fit:400/1*9LAiIJ09lU4B4QtygYkdSw.jpeg)](https://buymeacoffee.com/osary00)
+[![Buy Me A Coffee](https://camo.githubusercontent.com/0b448aabee402aaf7b3b256ae471e7dc66bcf174fad7d6bb52b27138b2364e47/68747470733a2f2f7777772e6275796d6561636f666665652e636f6d2f6173736574732f696d672f637573746f6d5f696d616765732f6f72616e67655f696d672e706e67)](https://buymeacoffee.com/osary00)
 
 ------------------------------------------------------------------------
 
