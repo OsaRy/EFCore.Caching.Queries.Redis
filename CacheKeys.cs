@@ -10,6 +10,8 @@ namespace EFCore.Caching.Queries.Redis
 	public static class CacheKeys
 	{
 		public static  ConcurrentDictionary<Type, HashSet<string>> entityCacheKeyMap = new();
+		public static  string Perfix = "EFCoreCaching:";
+		public static TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
 
 	}
 }

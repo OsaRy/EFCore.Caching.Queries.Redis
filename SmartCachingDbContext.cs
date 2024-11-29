@@ -31,7 +31,7 @@ public abstract class SmartCachingDbContext: DbContext
         var result = await query.ToListAsync();
         if (result != null)
         {
-            await _cacheService.SetCacheAsync(cacheKey, result, cacheDuration ?? TimeSpan.FromMinutes(10));
+            await _cacheService.SetCacheAsync(cacheKey, result, cacheDuration ?? CacheKeys.CacheDuration);
             Console.WriteLine($"Cache stored for key: {cacheKey}");
         }
 
@@ -55,7 +55,7 @@ public abstract class SmartCachingDbContext: DbContext
         var result = await query.FirstOrDefaultAsync();
         if (result != null)
         {
-            await _cacheService.SetCacheAsync(cacheKey, result, cacheDuration ?? TimeSpan.FromMinutes(10));
+            await _cacheService.SetCacheAsync(cacheKey, result, cacheDuration ?? CacheKeys.CacheDuration);
             Console.WriteLine($"Cache stored for key: {cacheKey}");
         }
 
@@ -76,7 +76,7 @@ public abstract class SmartCachingDbContext: DbContext
         }
 
         var result = await query.AnyAsync();
-        await _cacheService.SetCacheAsync(cacheKey, result, cacheDuration ?? TimeSpan.FromMinutes(10));
+        await _cacheService.SetCacheAsync(cacheKey, result, cacheDuration ?? CacheKeys.CacheDuration);
         Console.WriteLine($"Cache stored for key: {cacheKey}");
 
         return result;
@@ -96,7 +96,7 @@ public abstract class SmartCachingDbContext: DbContext
         }
 
         var result = await query.CountAsync();
-        await _cacheService.SetCacheAsync(cacheKey, result, cacheDuration ?? TimeSpan.FromMinutes(10));
+        await _cacheService.SetCacheAsync(cacheKey, result, cacheDuration ?? CacheKeys.CacheDuration);
         Console.WriteLine($"Cache stored for key: {cacheKey}");
 
         return result;

@@ -1,65 +1,63 @@
-﻿
+﻿::: {.markdown .prose .w-full .break-words .dark:prose-invert .dark}
+Here\'s the content in plain text that you can copy easily:
+
+------------------------------------------------------------------------
+
 # EFCore.Caching.Queries.Redis
 
-`EFCore.Caching.Queries.Redis` is an advanced, cache-enabled extension of `DbContext` in ASP.NET Core. It integrates seamlessly with Redis to optimize data access by caching query results and intelligently invalidating caches when data changes. This approach reduces database load and improves application performance.
-
----
-
-## Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Creating a Derived Context](#creating-a-derived-context)
-  - [Configuring Dependency Injection](#configuring-dependency-injection)
-  - [Available Methods](#available_methods)
-  - [Cache Invalidation](#cache-invalidation)
-- [Customization](#customization)
-- [Best Practices](#best-practices)
-- [Contributing](#contributing)
-- [License](#license)
-
----
+A smart caching solution for Entity Framework Core queries, leveraging
+Redis as a distributed cache. This library simplifies caching query
+results, reducing database load and improving performance.
 
 ## Features
 
-- **Automatic Query Caching**: Caches query results for a specified duration, reducing database access.
-- **Automatic Cache Invalidation**: Invalidates cached entries when related entities are added, updated, or deleted.
-- **Extensible Architecture**: Allows easy customization and integration with other caching providers.
-- **Efficient Key Management**: Generates unique cache keys based on query expressions, including related entity paths.
-- **Flexible Cache Duration**: Set custom cache expiration times for each query.
-
----
+-   Caches query results using Redis.
+-   Supports caching for `ToListAsync`, `FirstOrDefaultAsync`,
+    `AnyAsync`, and `CountAsync`.
+-   Auto-invalidation of cache on data changes.
+-   Tracks and caches Include/ThenInclude queries.
+-   Easily extendable and configurable.
 
 ## Installation
 
-1. **Install required packages**:
+You can install the package via NuGet Package Manager:
 
-   ```bash
-   dotnet add package Microsoft.EntityFrameworkCore
-   dotnet add package Microsoft.Extensions.Caching.StackExchangeRedis
-   dotnet add package StackExchange.Redis
-   ```
+``` 
+Install-Package EFCore.Caching.Queries.Redis
+```
 
-2. **Add the Redis caching service to your ASP.NET Core project**:
+Or using the .NET CLI:
 
-   ```bash
-   dotnet add package EFCore.Caching.Queries.Redis
-   ```
-
----
+``` 
+ add package EFCore.Caching.Queries.Redis
+```
 
 ## Usage
 
-### Creating a Derived Context
+### 1. Configure Redis Cache in `Startup.cs`
 
-Inherit from `SmartCachingDbContext` and define your `DbSet` properties:
+Ensure you have Redis running and add the following services in your
+`Startup.cs` or `Program.cs`:
 
-```csharp
-using EFCore.Caching.Queries.Redis;
-using Microsoft.EntityFrameworkCore;
+``` 
+services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost:6379"; // Replace with your Redis connection string.
+});
+```
 
-public class ApplicationDbContext : SmartCachingDbContext
+### 2. Set Up `AddEFCoreCachingQueriesRedis`
+
+``` 
+services.AddEFCoreCachingQueriesRedis(); // you can set perfix for keys defualt is "EFCoreCaching and you can set Cache Duration defualt is 10 Minuts".
+```
+
+### 3. Use `SmartCachingDbContext`
+
+Create a custom `DbContext` inheriting from `SmartCachingDbContext`:
+
+``` 
+class ApplicationDbContext : SmartCachingDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICacheService cacheService)
         : base(options, cacheService)
@@ -67,80 +65,55 @@ public class ApplicationDbContext : SmartCachingDbContext
     }
 
     public DbSet<Product> Products { get; set; }
-    public DbSet<Order> Orders { get; set; }
 }
 ```
 
-### Configuring Dependency Injection
+### 4. Query with Caching
 
-Register the context and cache service in `Program.cs`:
+#### Cache a List of Results
 
-```csharp
-services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
-services.AddSingleton<ICacheService, DistributedCacheService>();
+``` 
+var products = await context.FromCacheListAsync(context.Products.Where(p => p.Price > 100));
 ```
 
-## Available Methods
+#### Cache FirstOrDefault Result
 
-### 1. `FromCacheListAsync<T>(IQueryable<T> query, TimeSpan? cacheDuration = null)`
-- **Description**: Retrieves a list of results from the cache or database. If not cached, it caches the result for future use.
-- **Parameters**:
-  - `query`: The EF Core query to execute.
-  - `cacheDuration`: Optional cache expiration duration (default: 10 minutes).
-
-### 2. `FromCacheFirstOrDefaultAsync<T>(IQueryable<T> query, TimeSpan? cacheDuration = null)`
-- **Description**: Retrieves the first result from the cache or database. Caches the result if not found in the cache.
-- **Parameters**:
-  - `query`: The EF Core query to execute.
-  - `cacheDuration`: Optional cache expiration duration (default: 10 minutes).
-
-### 3. `FromCacheAnyAsync<T>(IQueryable<T> query, TimeSpan? cacheDuration = null)`
-- **Description**: Checks if any records exist for the query. Caches the result for future checks.
-- **Parameters**:
-  - `query`: The EF Core query to execute.
-  - `cacheDuration`: Optional cache expiration duration (default: 10 minutes).
-
-### 4. `FromCacheCountAsync<T>(IQueryable<T> query, TimeSpan? cacheDuration = null)`
-- **Description**: Retrieves the count of records from the cache or database. Caches the result if not found.
-- **Parameters**:
-  - `query`: The EF Core query to execute.
-  - `cacheDuration`: Optional cache expiration duration (default: 10 minutes).
-
-### 5. `SaveChangesAsync(CancellationToken cancellationToken = default)`
-- **Description**: Overrides the default `SaveChangesAsync` method to invalidate cache keys associated with changed entities.
-- **Parameters**:
-  - `cancellationToken`: Optional cancellation token.
-
-### Cache Invalidation
-
-`SmartCachingDbContext` automatically invalidates cache entries when changes are made to entities:
-
-```csharp
-var newProduct = new Product { Name = "New Product", IsActive = true };
-_context.Products.Add(newProduct);
-await _context.SaveChangesAsync();  // Cache entries related to Products will be invalidated.
+``` 
+var product = await context.FromCacheFirstOrDefaultAsync(context.Products.Where(p => p.Id == 1));
 ```
 
----
+#### Cache a Boolean Result (`Any`)
+
+``` 
+var exists = await context.FromCacheAnyAsync(context.Products.Where(p => p.Stock > 0));
+```
+
+#### Cache a Count Result
+
+``` 
+var count = await context.FromCacheCountAsync(context.Products.Where(p => p.Price > 50));
+```
 
 ## Customization
 
 - **Custom Cache Duration**: Override default cache durations by passing a `TimeSpan` parameter when querying.
-- **Cache Key Generation**: Modify the `GenerateCacheKey` method to customize cache key creation.
-- **Advanced Cache Invalidation**: Override `InvalidateCacheForEntityType` to implement custom cache invalidation logic.
 
----
+### 5. Cache Invalidation
 
-## Best Practices
+The cache automatically invalidates entries when `SaveChangesAsync` is
+called:
 
-- **Cache Only Expensive Queries**: Avoid caching simple or frequently changing queries.
-- **Set Appropriate Expiration**: Use shorter cache durations for volatile data and longer durations for static data.
-- **Monitor Cache Usage**: Use Redis monitoring tools to track cache hits and misses for performance tuning.
+``` 
+await context.SaveChangesAsync();
+```
 
----
+## Cache Key Generation
 
+The package automatically generates unique cache keys based on query
+strings and includes paths.
+
+
+------------------------------------------------------------------------
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
@@ -160,3 +133,4 @@ This project is licensed under the MIT License.
 ---
 
 Feel free to reach out with suggestions or issues. Happy caching! 🚀
+

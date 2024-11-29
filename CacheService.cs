@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace EFCore.Caching.Queries.Redis
 {
-    public class DistributedCacheService : ICacheService
+    public class CacheService : ICacheService
     {
         private readonly IDistributedCache _cache;
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
@@ -18,14 +18,14 @@ namespace EFCore.Caching.Queries.Redis
             MaxDepth = 64
         };
 
-        public DistributedCacheService(IDistributedCache cache)
+        public CacheService(IDistributedCache cache)
         {
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
         public async Task<T> GetFromCacheAsync<T>(string cacheKey)
         {
-            var cachedData = await _cache.GetStringAsync(cacheKey);
+            var cachedData = await _cache.GetStringAsync($"{CacheKeys.Perfix}{cacheKey}");
             if (!string.IsNullOrEmpty(cachedData))
             {
                 return JsonSerializer.Deserialize<T>(cachedData, _jsonSerializerOptions);
@@ -42,12 +42,12 @@ namespace EFCore.Caching.Queries.Redis
                 AbsoluteExpirationRelativeToNow = expiration
             };
 
-            await _cache.SetStringAsync(cacheKey, serializedData, options);
+            await _cache.SetStringAsync($"{CacheKeys.Perfix}{cacheKey}", serializedData, options);
         }
 
         public async Task RemoveCacheAsync(string cacheKey)
         {
-            await _cache.RemoveAsync(cacheKey);
+            await _cache.RemoveAsync($"{CacheKeys.Perfix}{cacheKey}");
         }
     }
 
