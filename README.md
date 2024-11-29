@@ -1,5 +1,3 @@
-﻿::: {.markdown .prose .w-full .break-words .dark:prose-invert .dark}
-Here\'s the content in plain text that you can copy easily:
 
 ------------------------------------------------------------------------
 
