@@ -7,8 +7,8 @@
 		  <PackageId>EFCore.Caching.Queries.Redis</PackageId>
 		  <Version>1.0.1</Version>
 		  <Authors>OsaRy</Authors>
-		  <Description>EF Core Caching Queries for Redis</Description>
-		  <PackageTags>caching, efcore, redis</PackageTags>
+	  <Description>This project implements caching for Entity Framework Core queries using Redis as a cache provider to improve performance by reducing database load.</Description>
+	  <PackageTags>caching, efcore, redis</PackageTags>
 		  <RepositoryUrl>https://github.com/OsaRy/EFCore.Caching.Queries.Redis</RepositoryUrl>
 		  <PackageLicenseExpression>MIT</PackageLicenseExpression>
 		  <PackageReadmeFile>README.md</PackageReadmeFile>
