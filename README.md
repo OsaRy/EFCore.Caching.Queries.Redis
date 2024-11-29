@@ -1,3 +1,4 @@
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/lime-btn-btn-icon.svg)](https://buymeacoffee.com/osary00)
 
 ------------------------------------------------------------------------
 
